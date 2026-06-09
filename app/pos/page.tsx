@@ -63,7 +63,7 @@ export default function PosPage() {
 
   const [saving, setSaving] = useState(false)
   const [flashId, setFlashId] = useState<string | null>(null)
-  const flashTimer = useRef<NodeJS.Timeout>()
+  const flashTimer = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Payment state
   const [paymentOpen, setPaymentOpen] = useState(false)

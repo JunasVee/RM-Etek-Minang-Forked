@@ -16,13 +16,13 @@ export async function GET() {
       }),
       prisma.order.findMany({
         where: {
-          status: { in: ["OPEN", "PARTIALLY_PAID"] },
+          status: { in: ["OPEN"] },
           createdAt: { gte: todayStart, lte: todayEnd },
         },
         include: {
           items: { include: { menuItem: true } },
           createdBy: { select: { id: true, name: true } },
-          transactions: true,
+          transaction: true,
         },
         orderBy: { createdAt: "desc" },
       }),

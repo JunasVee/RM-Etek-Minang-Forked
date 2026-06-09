@@ -24,7 +24,7 @@ const WeeklyChart = dynamic(
             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
             <YAxis tick={{ fontSize: 11 }}
               tickFormatter={(v: number) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}jt` : v >= 1000 ? `${(v / 1000)}rb` : v.toString()} />
-            <Tooltip formatter={(value: number) => formatRupiah(value)} />
+            <Tooltip formatter={(value) => formatRupiah(Number(value))} />
             <Legend />
             <Line type="monotone" dataKey="revenue" name="Pendapatan" stroke="#b45309" strokeWidth={2.5} dot={{ r: 4 }} />
             <Line type="monotone" dataKey="profit" name="Profit" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 4 }} strokeDasharray="5 5" />

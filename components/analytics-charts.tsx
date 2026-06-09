@@ -16,7 +16,7 @@ export function RevenueTrend({ data }: { data: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="date" tick={{ fontSize: 10 }} />
         <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v >= 1e6 ? `${(v/1e6).toFixed(1)}jt` : v >= 1000 ? `${(v/1000)}rb` : v.toString()} />
-        <Tooltip formatter={(v: number) => formatRupiah(v)} />
+        <Tooltip formatter={(v) => formatRupiah(Number(v))} />
         <Line type="monotone" dataKey="revenue" name="Pendapatan" stroke="#b45309" strokeWidth={2} dot={{ r: 3 }} />
       </LineChart>
     </ResponsiveContainer>
@@ -29,10 +29,10 @@ export function MethodPie({ data }: { data: any[] }) {
     <ResponsiveContainer width="100%" height={250}>
       <PieChart>
         <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85}
-          label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}>
+          label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
           {data.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
         </Pie>
-        <Tooltip formatter={(v: number) => formatRupiah(v)} />
+        <Tooltip formatter={(v) => formatRupiah(Number(v))} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>
@@ -46,7 +46,7 @@ export function TopItemsBar({ data }: { data: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis type="number" tick={{ fontSize: 10 }} />
         <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} />
-        <Tooltip formatter={(v: number) => [`${v} porsi`, "Terjual"]} />
+        <Tooltip formatter={(v) => [`${Number(v)} porsi`, "Terjual"] as [string, string]} />
         <Bar dataKey="qty" radius={[0, 6, 6, 0]}>
           {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
         </Bar>
@@ -76,7 +76,7 @@ export function DayOfWeekBar({ data }: { data: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="day" tick={{ fontSize: 11 }} />
         <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v >= 1000 ? `${(v/1000)}rb` : v.toString()} />
-        <Tooltip formatter={(v: number) => formatRupiah(v)} />
+        <Tooltip formatter={(v) => formatRupiah(Number(v))} />
         <Bar dataKey="avgRevenue" name="Rata-rata Pendapatan" fill="#b45309" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
@@ -90,7 +90,7 @@ export function ProfitTrend({ data }: { data: any[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis dataKey="date" tick={{ fontSize: 10 }} />
         <YAxis tick={{ fontSize: 10 }} tickFormatter={(v: number) => v >= 1e6 ? `${(v/1e6).toFixed(1)}jt` : v >= 1000 ? `${(v/1000)}rb` : v.toString()} />
-        <Tooltip formatter={(v: number) => formatRupiah(v)} />
+        <Tooltip formatter={(v) => formatRupiah(Number(v))} />
         <Legend />
         <Line type="monotone" dataKey="revenue" name="Pendapatan" stroke="#16a34a" strokeWidth={2} dot={false} />
         <Line type="monotone" dataKey="expenses" name="Pengeluaran" stroke="#dc2626" strokeWidth={2} dot={false} />

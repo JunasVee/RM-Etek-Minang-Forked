@@ -22,7 +22,7 @@ export default function PrinterStatus() {
       if (name) setPrinterName(name)
     })
 
-    return unsubscribe
+    return () => { unsubscribe() }
   }, [])
 
   const handleConnect = async () => {

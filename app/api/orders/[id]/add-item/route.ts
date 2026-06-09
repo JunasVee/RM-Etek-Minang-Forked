@@ -12,7 +12,7 @@ export async function POST(
     }
 
     const order = await prisma.order.findUnique({ where: { id: params.id }, include: { items: true } })
-    if (!order || (order.status !== "OPEN" && order.status !== "PARTIALLY_PAID")) {
+    if (!order || order.status !== "OPEN") {
       return NextResponse.json({ success: false, error: "Pesanan tidak aktif" }, { status: 400 })
     }
 

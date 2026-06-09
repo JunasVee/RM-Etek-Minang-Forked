@@ -47,8 +47,8 @@ export async function PUT(
 
       // Check if any quantity was reduced
       for (const [menuItemId, oldQty] of oldItemMap) {
-        const newQty = newItemMap.get(menuItemId)
-        if (newQty !== undefined && newQty < oldQty) {
+        const newQty = newItemMap.get(menuItemId) as number | undefined
+        if (typeof newQty === "number" && newQty < oldQty) {
           return NextResponse.json(
             { success: false, error: "Perlu persetujuan Owner untuk mengurangi jumlah item" },
             { status: 403 }
@@ -131,7 +131,7 @@ export async function PUT(
       include: {
         items: { include: { menuItem: true } },
         createdBy: { select: { id: true, name: true } },
-        transactions: true,
+        transaction: true,
       },
     })
 

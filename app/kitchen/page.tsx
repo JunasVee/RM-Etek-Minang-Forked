@@ -74,7 +74,7 @@ export default function KitchenPage() {
   const [restockQty, setRestockQty] = useState("")
   const [restocking, setRestocking] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const toastTimer = useRef<NodeJS.Timeout>()
+  const toastTimer = useRef<NodeJS.Timeout | undefined>(undefined)
 
   /* ---------- Clock ---------- */
   useEffect(() => {

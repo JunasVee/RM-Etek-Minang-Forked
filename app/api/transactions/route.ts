@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
     const transactions = await prisma.transaction.findMany({
       where: {
         ...where,
-        isVoid: false,
         order: Object.keys(orderWhere).length > 0 ? orderWhere : undefined,
       },
       include: {
@@ -67,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Fetch order with items
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true, transactions: true },
+      include: { items: true, transaction: true },
     })
 
     if (!order) {
@@ -77,7 +76,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (order.status === "PAID" || order.transactions.length > 0) {
+    if (order.status === "PAID" || order.transaction) {
       return NextResponse.json(
         { success: false, error: "Pesanan sudah dibayar" },
         { status: 400 }

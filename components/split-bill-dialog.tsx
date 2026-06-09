@@ -10,7 +10,20 @@ import { printBytes } from "@/lib/printer"
 import { buildEscPosSplitPersonReceipt, buildEscPosSplitCombinedReceipt, type SplitPersonData } from "@/lib/escpos"
 
 type SplitItem = { menuItemId: string; name: string; price: number; quantity: number }
-type Props = { open: boolean; onClose: () => void; onComplete: () => void; orderId: string; orderNumber: string; items: SplitItem[] }
+type ExistingPayment = {
+  id: string
+  totalAmount: number
+  paymentMethod: string
+  splitGroup: string | null
+  splitLabel: string | null
+  cashReceived: number | null
+  changeAmount: number | null
+}
+type Props = {
+  open: boolean; onClose: () => void; onComplete: () => void
+  orderId: string; orderNumber: string; items: SplitItem[]
+  existingPayments?: ExistingPayment[]
+}
 
 type PersonDetail = {
   label: string; amount: number
@@ -29,6 +42,8 @@ type ItemChange = { added: { name: string; menuItemId: string; count: number }[]
 type Step = "loading" | "method" | "setup-equal" | "setup-item" | "pay" | "done" | "print-select"
 
 export default function SplitBillDialog({ open, onClose, onComplete, orderId, orderNumber, items }: Props) {
+  // NOTE: prop `existingPayments` diterima untuk kompatibilitas API caller,
+  // namun saat ini fitur bagi tagihan belum didukung schema.
   const [step, setStep] = useState<Step>("loading")
   const [splitType, setSplitType] = useState<"equal" | "item">("equal")
   const [personCount, setPersonCount] = useState(2)

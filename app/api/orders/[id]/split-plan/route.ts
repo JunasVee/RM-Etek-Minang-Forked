@@ -1,41 +1,15 @@
 export const dynamic = "force-dynamic"
-import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { NextResponse } from "next/server"
 
-// GET - load split plan
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const order = await prisma.order.findUnique({
-      where: { id: params.id },
-      select: { splitPlan: true },
-    })
-    if (!order) return NextResponse.json({ success: false, error: "Not found" }, { status: 404 })
-
-    const plan = order.splitPlan ? JSON.parse(order.splitPlan) : null
-    return NextResponse.json({ success: true, data: plan })
-  } catch {
-    return NextResponse.json({ success: false, error: "Gagal memuat data" }, { status: 500 })
-  }
+// Schema saat ini belum memiliki kolom Order.splitPlan, jadi penyimpanan
+// rencana bagi tagihan belum didukung.
+export async function GET() {
+  return NextResponse.json({ success: true, data: null })
 }
 
-// PUT - save split plan
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const body = await request.json()
-
-    await prisma.order.update({
-      where: { id: params.id },
-      data: { splitPlan: JSON.stringify(body) },
-    })
-
-    return NextResponse.json({ success: true })
-  } catch {
-    return NextResponse.json({ success: false, error: "Gagal menyimpan" }, { status: 500 })
-  }
+export async function PUT() {
+  return NextResponse.json(
+    { success: false, error: "Fitur bagi tagihan belum tersedia" },
+    { status: 501 }
+  )
 }
