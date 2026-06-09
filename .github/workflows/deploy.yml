@@ -3,13 +3,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+
 env:
-  NODE_ENV: production
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DIRECT_URL: ${{ secrets.DIRECT_URL }}
   JWT_SECRET: ${{ secrets.JWT_SECRET }}
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
 jobs:
   build-and-deploy:
     name: Build and Deploy Application
@@ -26,12 +27,13 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev
+        env:
+          NODE_ENV: development
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      # ✅ TAMBAHAN: Run Jest tests
       - name: Run tests
         run: npm test
         env:
@@ -39,6 +41,8 @@ jobs:
 
       - name: Build Next.js application
         run: npm run build
+        env:
+          NODE_ENV: production
 
       - name: Create deployment package
         run: |
