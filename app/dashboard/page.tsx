@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useSession } from "@/components/session-provider"
 import { formatRupiah } from "@/lib/utils"
+import { cachedFetch } from "@/lib/cache"
 import {
   TrendingUp, TrendingDown, Receipt, Banknote, BarChart3, Wallet,
 } from "lucide-react"
@@ -58,17 +59,27 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true)
-    const [tRes, yRes, wRes] = await Promise.all([
-      fetch(`/api/reports/profit?date=${todayISO}`),
-      fetch(`/api/reports/profit?date=${yestISO}`),
-      fetch("/api/reports/profit/weekly"),
-    ])
-    const [tData, yData, wData] = await Promise.all([tRes.json(), yRes.json(), wRes.json()])
-    if (tData.success) setToday(tData.data)
-    if (yData.success) setYesterday(yData.data)
-    if (wData.success) setWeekly(wData.data)
+    const data = await cachedFetch("/api/dashboard/summary", 30000)
+    if (data.success) {
+      const d = data.data
+      setToday({
+        totalRevenue: d.today.revenue,
+        revenueCount: d.today.count,
+        totalExpenses: d.today.expenses,
+        expenseCount: d.today.hasExpenses ? 1 : 0,
+        profit: d.today.profit,
+        hasExpenses: d.today.hasExpenses,
+      })
+      setYesterday({
+        totalRevenue: d.yesterdayRevenue,
+        revenueCount: 0, totalExpenses: 0, expenseCount: 0, profit: 0, hasExpenses: false,
+      })
+      setWeekly(d.weekly.map((w: any) => ({
+        date: w.date, dateISO: "", revenue: w.revenue, expenses: 0, profit: w.profit, txCount: 0,
+      })))
+    }
     setLoading(false)
-  }, [todayISO, yestISO])
+  }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
 

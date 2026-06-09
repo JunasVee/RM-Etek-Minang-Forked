@@ -19,8 +19,19 @@ const TopItemsBar = dynamic(() => import("@/components/analytics-charts").then((
 const MethodPie = dynamic(() => import("@/components/analytics-charts").then((m) => m.MethodPie), { ssr: false, loading: () => <div className="h-[250px] bg-gray-50 rounded-lg animate-pulse" /> })
 
 // Date helpers
-function todayStr() { return new Date().toISOString().split("T")[0] }
-function fmtRp(n: number) { return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n) }
+// ✅ Pakai local date methods (mengikuti timezone browser = WIB)
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
+
+function fmtRp(n: number) {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(n)
+}
+
+function localDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}
 
 function getWeekRange(date: Date) {
   const d = new Date(date)
@@ -28,13 +39,13 @@ function getWeekRange(date: Date) {
   const mondayOff = day === 0 ? -6 : 1 - day
   const mon = new Date(d); mon.setDate(d.getDate() + mondayOff)
   const sun = new Date(mon); sun.setDate(mon.getDate() + 6)
-  return { start: mon.toISOString().split("T")[0], end: sun.toISOString().split("T")[0] }
+  return { start: localDateStr(mon), end: localDateStr(sun) }  // ✅
 }
 
 function getMonthRange(year: number, month: number) {
   const start = new Date(year, month, 1)
   const end = new Date(year, month + 1, 0)
-  return { start: start.toISOString().split("T")[0], end: end.toISOString().split("T")[0] }
+  return { start: localDateStr(start), end: localDateStr(end) }  // ✅
 }
 
 function pctChange(cur: number, prev: number): number | null {
@@ -59,7 +70,10 @@ export default function ReportsPage() {
   const [monthYear, setMonthYear] = useState(new Date().getFullYear())
   const [monthMonth, setMonthMonth] = useState(new Date().getMonth())
   // Custom
-  const [customStart, setCustomStart] = useState(() => { const d = new Date(); d.setDate(d.getDate() - 6); return d.toISOString().split("T")[0] })
+  // ✅ customStart pakai local date
+  const [customStart, setCustomStart] = useState(() => {
+  const d = new Date(); d.setDate(d.getDate() - 6); return localDateStr(d)
+  })
   const [customEnd, setCustomEnd] = useState(todayStr())
 
   const getRange = useCallback(() => {

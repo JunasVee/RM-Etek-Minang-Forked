@@ -15,7 +15,7 @@
     "db:studio": "prisma studio",
     "db:seed-demo": "tsx prisma/seed-demo.ts",
     "postinstall": "prisma generate",
-    "test": "jest --passWithNoTests"
+    "test": "jest"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

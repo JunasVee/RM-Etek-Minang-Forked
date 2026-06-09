@@ -13,13 +13,14 @@ import {
   Settings,
   QrCode,
   TrendingUp,
+  ShieldCheck,
 } from "lucide-react"
-
 const DASHBOARD_NAV: SidebarItem[] = [
   { label: "Ringkasan", href: "/dashboard", icon: LayoutDashboard },
   { label: "Transaksi", href: "/dashboard/transactions", icon: Receipt },
   { label: "Laporan", href: "/dashboard/reports", icon: BarChart3 },
   { label: "Analitik", href: "/dashboard/analytics", icon: TrendingUp },
+  { label: "Persetujuan", href: "/dashboard/approvals", icon: ShieldCheck },
   { label: "Pengeluaran", href: "/dashboard/expenses", icon: Wallet },
   { label: "Kategori", href: "/dashboard/categories", icon: List },
   { label: "Stok & Menu", href: "/dashboard/menu", icon: Package },
@@ -32,6 +33,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="h-screen flex flex-col">
       <AppHeader userName={session.name} role={session.role} />
+
       <div className="flex flex-1 overflow-hidden">
         <AppSidebar items={DASHBOARD_NAV} />
         <main className="flex-1 overflow-auto bg-gray-50 p-4">

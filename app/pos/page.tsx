@@ -10,10 +10,13 @@ import {
 } from "@/components/ui/dialog"
 import {
   Plus, Minus, Trash2, ShoppingCart, X, ClipboardList,
-  UtensilsCrossed, Package as PackageIcon,
+  UtensilsCrossed, Package as PackageIcon, Lock, Users,
 } from "lucide-react"
 import { formatRupiah, cn } from "@/lib/utils"
+import { cachedFetch, invalidateCache } from "@/lib/cache"
 import PaymentDialog from "@/components/payment-dialog"
+import ModRequestDialog from "@/components/mod-request-dialog"
+import SplitBillDialog from "@/components/split-bill-dialog"
 
 /* ---------- types ---------- */
 type Category = { id: string; name: string; sortOrder: number }
@@ -36,6 +39,11 @@ type OrderFromAPI = {
     priceAtOrder: number; menuItem: { name: string }
   }[]
   createdBy: { name: string }
+  transactions: {
+    id: string; totalAmount: number; paymentMethod: string;
+    splitGroup: string | null; splitLabel: string | null;
+    cashReceived: number | null; changeAmount: number | null;
+  }[]
 }
 
 export default function PosPage() {
@@ -65,24 +73,49 @@ export default function PosPage() {
     items: { menuItemId: string; name: string; price: number; quantity: number }[]
   } | null>(null)
 
+  // Mod request state
+  const [modRequestOpen, setModRequestOpen] = useState(false)
+  const [modRequestOrder, setModRequestOrder] = useState<{
+    id: string; orderNumber: string;
+    items: { menuItemId: string; name: string; quantity: number }[]
+  } | null>(null)
+
+  // Split bill state
+  const [splitOpen, setSplitOpen] = useState(false)
+  const [splitOrder, setSplitOrder] = useState<{
+    id: string; orderNumber: string;
+    items: { menuItemId: string; name: string; price: number; quantity: number }[]
+    existingPayments?: { id: string; totalAmount: number; paymentMethod: string;
+      splitGroup: string | null; splitLabel: string | null;
+      cashReceived: number | null; changeAmount: number | null }[]
+  } | null>(null)
+
+  const isRestricted = session.role !== "OWNER" // WAITER & KASIR need approval
+  const isEditingExisting = !!editingOrderId
+
   /* ---------- fetch data ---------- */
+  const fetchInit = useCallback(async () => {
+    const data = await cachedFetch("/api/pos/init", 15000)
+    if (data.success) {
+      setCategories(data.data.categories)
+      setMenuItems(data.data.menuItems.filter((m: MenuItem) => m.isActive))
+      setOpenOrders(data.data.openOrders)
+    }
+  }, [])
+
   const fetchMenu = useCallback(async () => {
-    const [catRes, menuRes] = await Promise.all([
-      fetch("/api/categories"),
-      fetch("/api/menu-items"),
-    ])
-    const [catData, menuData] = await Promise.all([catRes.json(), menuRes.json()])
-    if (catData.success) setCategories(catData.data)
-    if (menuData.success) setMenuItems(menuData.data.filter((m: MenuItem) => m.isActive))
+    invalidateCache("/api/pos")
+    const data = await cachedFetch("/api/pos/init", 0)
+    if (data.success) setMenuItems(data.data.menuItems.filter((m: MenuItem) => m.isActive))
   }, [])
 
   const fetchOpenOrders = useCallback(async () => {
-    const res = await fetch("/api/orders?status=OPEN&date=today")
-    const data = await res.json()
-    if (data.success) setOpenOrders(data.data)
+    invalidateCache("/api/pos")
+    const data = await cachedFetch("/api/pos/init", 0)
+    if (data.success) setOpenOrders(data.data.openOrders)
   }, [])
 
-  useEffect(() => { fetchMenu(); fetchOpenOrders() }, [fetchMenu, fetchOpenOrders])
+  useEffect(() => { fetchInit() }, [fetchInit])
 
   /* ---------- cart logic ---------- */
   const filteredMenu = activeCat === "all"
@@ -239,6 +272,10 @@ export default function PosPage() {
 
   /* ---------- cancel order ---------- */
   const cancelOrder = async (orderId: string) => {
+    if (isRestricted) {
+      alert("Perlu persetujuan Owner untuk membatalkan pesanan")
+      return
+    }
     if (!confirm("Yakin ingin membatalkan pesanan ini? Stok akan dikembalikan.")) return
     const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "PUT" })
     const data = await res.json()
@@ -441,10 +478,21 @@ export default function PosPage() {
 
                   <div className="flex items-center gap-1 shrink-0">
                     <button
-                      onClick={() => updateQty(item.menuItemId, -1)}
+                      onClick={() => {
+                        if (isRestricted && isEditingExisting) {
+                          setModRequestOrder({
+                            id: editingOrderId!,
+                            orderNumber: "Pesanan",
+                            items: cart.map((c) => ({ menuItemId: c.menuItemId, name: c.name, quantity: c.quantity })),
+                          })
+                          setModRequestOpen(true)
+                          return
+                        }
+                        updateQty(item.menuItemId, -1)
+                      }}
                       className="h-8 w-8 rounded-lg bg-white border flex items-center justify-center hover:bg-gray-100 active:scale-95"
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      {isRestricted && isEditingExisting ? <Lock className="h-3 w-3 text-amber-500" /> : <Minus className="h-3.5 w-3.5" />}
                     </button>
                     <span className="w-8 text-center text-sm font-bold">
                       {item.quantity}
@@ -463,10 +511,21 @@ export default function PosPage() {
                       {formatRupiah(item.price * item.quantity)}
                     </p>
                     <button
-                      onClick={() => removeItem(item.menuItemId)}
+                      onClick={() => {
+                        if (isRestricted && isEditingExisting) {
+                          setModRequestOrder({
+                            id: editingOrderId!,
+                            orderNumber: "Pesanan",
+                            items: cart.map((c) => ({ menuItemId: c.menuItemId, name: c.name, quantity: c.quantity })),
+                          })
+                          setModRequestOpen(true)
+                          return
+                        }
+                        removeItem(item.menuItemId)
+                      }}
                       className="text-red-400 hover:text-red-600 mt-0.5"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      {isRestricted && isEditingExisting ? <Lock className="h-3.5 w-3.5 text-amber-500" /> : <Trash2 className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                 </div>
@@ -528,13 +587,16 @@ export default function PosPage() {
                   const orderTotal = order.items.reduce(
                     (s, i) => s + i.priceAtOrder * i.quantity, 0
                   )
+                  const isPartial = order.status === "PARTIALLY_PAID"
+                  const paidAmount = order.transactions?.reduce((s, t) => s + t.totalAmount, 0) || 0
+                  const paidLabels = order.transactions?.filter((t) => t.splitLabel).map((t) => t.splitLabel) || []
                   return (
                     <div
                       key={order.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50"
+                      className={cn("flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50", isPartial && "border-yellow-300 bg-yellow-50")}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono font-bold text-sm">
                             {order.orderNumber}
                           </span>
@@ -546,6 +608,11 @@ export default function PosPage() {
                               Meja {order.tableNumber}
                             </Badge>
                           )}
+                          {isPartial && (
+                            <Badge className="text-xs bg-yellow-500 text-white">
+                              ⏳ {paidLabels.length} sudah bayar
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           {order.items.length} item · {formatRupiah(orderTotal)} ·{" "}
@@ -553,25 +620,97 @@ export default function PosPage() {
                             hour: "2-digit", minute: "2-digit",
                           })}
                         </p>
+                        {isPartial && (
+                          <p className="text-xs text-yellow-700 mt-0.5">
+                            Dibayar: {formatRupiah(paidAmount)} · Sisa: {formatRupiah(orderTotal - paidAmount)}
+                          </p>
+                        )}
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button size="sm" variant="outline" onClick={() => loadOrder(order)}>
-                          Lanjutkan
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-green-700 hover:bg-green-800"
-                          onClick={() => openPaymentForOrder(order)}
-                        >
-                          Bayar
-                        </Button>
-                        <Button
-                          size="sm" variant="ghost"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => cancelOrder(order.id)}
-                        >
-                          Batal
-                        </Button>
+                      <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                        {isPartial ? (
+                          /* PARTIALLY_PAID: show "Lanjutkan Pembayaran" */
+                          <Button
+                            size="sm"
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                            onClick={() => {
+                              setSplitOrder({
+                                id: order.id,
+                                orderNumber: order.orderNumber,
+                                items: order.items.map((i) => ({
+                                  menuItemId: i.menuItemId,
+                                  name: i.menuItem.name,
+                                  price: i.priceAtOrder,
+                                  quantity: i.quantity,
+                                })),
+                                existingPayments: order.transactions?.filter((t) => t.splitLabel) || [],
+                              })
+                              setSplitOpen(true)
+                              setShowOpenOrders(false)
+                            }}
+                          >
+                            Lanjutkan Bayar
+                          </Button>
+                        ) : (
+                          /* OPEN: show normal buttons */
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => loadOrder(order)}>
+                              Lanjutkan
+                            </Button>
+                            <Button size="sm" className="bg-green-700 hover:bg-green-800"
+                              onClick={() => openPaymentForOrder(order)}>
+                              Bayar
+                            </Button>
+                            {order.items.length >= 2 && (
+                              <Button size="sm" variant="outline"
+                                className="text-amber-700 border-amber-300 hover:bg-amber-50"
+                                onClick={() => {
+                                  setSplitOrder({
+                                    id: order.id,
+                                    orderNumber: order.orderNumber,
+                                    items: order.items.map((i) => ({
+                                      menuItemId: i.menuItemId,
+                                      name: i.menuItem.name,
+                                      price: i.priceAtOrder,
+                                      quantity: i.quantity,
+                                    })),
+                                  })
+                                  setSplitOpen(true)
+                                  setShowOpenOrders(false)
+                                }}>
+                                <Users className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </>
+                        )}
+                        {isRestricted ? (
+                          <Button
+                            size="sm" variant="ghost"
+                            className="text-amber-500 hover:text-amber-700"
+                            onClick={() => {
+                              setModRequestOrder({
+                                id: order.id,
+                                orderNumber: order.orderNumber,
+                                items: order.items.map((i) => ({
+                                  menuItemId: i.menuItemId,
+                                  name: i.menuItem.name,
+                                  quantity: i.quantity,
+                                })),
+                              })
+                              setModRequestOpen(true)
+                            }}
+                            title="Minta persetujuan Owner"
+                          >
+                            <Lock className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm" variant="ghost"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => cancelOrder(order.id)}
+                          >
+                            Batal
+                          </Button>
+                        )}
                       </div>
                     </div>
                   )
@@ -586,7 +725,7 @@ export default function PosPage() {
       {paymentOrder && (
         <PaymentDialog
           open={paymentOpen}
-          onClose={() => { setPaymentOpen(false); setPaymentOrder(null) }}
+          onClose={() => { setPaymentOpen(false); setPaymentOrder(null); fetchMenu(); fetchOpenOrders() }}
           onComplete={() => {
             setPaymentOpen(false)
             setPaymentOrder(null)
@@ -598,6 +737,37 @@ export default function PosPage() {
           orderType={paymentOrder.type}
           tableNumber={paymentOrder.tableNumber}
           items={paymentOrder.items}
+        />
+      )}
+
+      {/* ===== Mod Request Dialog ===== */}
+      {modRequestOrder && (
+        <ModRequestDialog
+          open={modRequestOpen}
+          onClose={() => { setModRequestOpen(false); setModRequestOrder(null) }}
+          orderId={modRequestOrder.id}
+          orderNumber={modRequestOrder.orderNumber}
+          userId={session.userId}
+          items={modRequestOrder.items}
+        />
+      )}
+
+      {/* ===== Split Bill Dialog ===== */}
+      {splitOrder && (
+        <SplitBillDialog
+          open={splitOpen}
+          onClose={() => { setSplitOpen(false); setSplitOrder(null) }}
+          onComplete={() => {
+            setSplitOpen(false)
+            setSplitOrder(null)
+            fetchMenu()
+            fetchOpenOrders()
+            clearCart()
+          }}
+          orderId={splitOrder.id}
+          orderNumber={splitOrder.orderNumber}
+          items={splitOrder.items}
+          existingPayments={splitOrder.existingPayments}
         />
       )}
     </div>

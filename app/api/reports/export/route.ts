@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -9,8 +10,8 @@ export async function GET(request: NextRequest) {
     }
 
     const date = new Date(dateParam)
-    const start = new Date(date); start.setHours(0, 0, 0, 0)
-    const end = new Date(date); end.setHours(23, 59, 59, 999)
+    const start = new Date(`${dateParam}T00:00:00+07:00`)
+    const end = new Date(`${dateParam}T23:59:59.999+07:00`)
 
     // Revenue & method breakdown
     const [total, cash, qris, dineIn, takeaway] = await Promise.all([
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
     // Menu sales
     const orderItems = await prisma.orderItem.findMany({
       where: {
-        order: { status: "PAID", transaction: { paidAt: { gte: start, lte: end } } },
+        order: { status: "PAID", transactions: { some: { paidAt: { gte: start, lte: end } } } },
       },
       include: { menuItem: { select: { name: true, category: { select: { name: true } } } } },
     })

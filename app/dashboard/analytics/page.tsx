@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select"
 import { TrendingUp, TrendingDown } from "lucide-react"
 import { formatRupiah, cn } from "@/lib/utils"
+import { cachedFetch } from "@/lib/cache"
 import dynamic from "next/dynamic"
 
 const Loader = () => <div className="h-[250px] bg-gray-50 rounded-lg animate-pulse" />
@@ -57,25 +58,17 @@ export default function AnalyticsPage() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const p = `startDate=${startDate}&endDate=${endDate}`
-    const results = await Promise.all([
-      fetch(`/api/analytics/revenue?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/revenue/comparison?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/menu-performance?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/peak-hours?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/day-of-week?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/profit?${p}`).then((r) => r.json()),
-      fetch(`/api/analytics/stock-efficiency?${p}`).then((r) => r.json()),
-      fetch("/api/menu-items").then((r) => r.json()),
-    ])
-    if (results[0].success) setRevenue(results[0].data)
-    if (results[1].success) setComparison(results[1].data)
-    if (results[2].success) setMenuPerf(results[2].data)
-    if (results[3].success) setPeakHours(results[3].data)
-    if (results[4].success) setDayOfWeek(results[4].data)
-    if (results[5].success) setProfit(results[5].data)
-    if (results[6].success) setStockEff(results[6].data)
-    if (results[7].success) setMenuItems(results[7].data.map((m: any) => ({ id: m.id, name: m.name })))
+    const data = await cachedFetch(`/api/analytics/all?startDate=${startDate}&endDate=${endDate}`, 60000)
+    if (data.success) {
+      setRevenue(data.data.revenue)
+      setComparison(data.data.comparison)
+      setMenuPerf(data.data.menuPerf)
+      setPeakHours(data.data.peakHours)
+      setDayOfWeek(data.data.dayOfWeek)
+      setProfit(data.data.profit)
+      setStockEff(data.data.stockEfficiency)
+      setMenuItems(data.data.menuItemsList)
+    }
     setLoading(false)
   }, [startDate, endDate])
 

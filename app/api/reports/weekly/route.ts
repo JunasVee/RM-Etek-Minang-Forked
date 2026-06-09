@@ -1,31 +1,41 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+function wibDayRange(offsetDays: number) {
+  const wib = new Date(new Date().getTime() + 7 * 60 * 60 * 1000)
+  wib.setUTCDate(wib.getUTCDate() - offsetDays)
+  const dateISO = wib.toISOString().split("T")[0]
+  return {
+    start:   new Date(`${dateISO}T00:00:00+07:00`),
+    end:     new Date(`${dateISO}T23:59:59.999+07:00`),
+    dateISO,
+  }
+}
+
 export async function GET() {
   try {
-    const days: { date: string; revenue: number; count: number }[] = []
+    const days = []
 
     for (let i = 6; i >= 0; i--) {
-      const date = new Date()
-      date.setDate(date.getDate() - i)
-      const start = new Date(date); start.setHours(0, 0, 0, 0)
-      const end = new Date(date); end.setHours(23, 59, 59, 999)
+      const { start, end, dateISO } = wibDayRange(i)
 
       const result = await prisma.transaction.aggregate({
-        where: { paidAt: { gte: start, lte: end } },
-        _count: true,
-        _sum: { totalAmount: true },
+        where: { paidAt: { gte: start, lte: end }, isVoid: false },
+        _count: true, _sum: { totalAmount: true },
       })
 
       days.push({
-        date: start.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" }),
+        date: new Date(`${dateISO}T12:00:00+07:00`).toLocaleDateString("id-ID", {
+          weekday: "short", day: "numeric", month: "short",
+        }),
         revenue: result._sum.totalAmount || 0,
-        count: result._count,
+        count:   result._count,
       })
     }
 
     return NextResponse.json({ success: true, data: days })
-  } catch {
+  } catch (error) {
+    console.error(error)
     return NextResponse.json({ success: false, error: "Gagal memuat laporan mingguan" }, { status: 500 })
   }
 }

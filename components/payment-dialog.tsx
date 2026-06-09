@@ -84,7 +84,7 @@ export default function PaymentDialog({
       time: now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
       type: orderType as "DINE_IN" | "TAKEAWAY",
       tableNumber,
-      cashierName: "-",
+      cashierName: result.order?.createdBy?.name || "Pelanggan",
       items: items.map((i) => ({
         name: i.name,
         quantity: i.quantity,

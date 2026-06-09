@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
@@ -12,8 +13,8 @@ export async function GET(request: NextRequest) {
 
     if (dateParam) {
       const date = new Date(dateParam)
-      const start = new Date(date); start.setHours(0, 0, 0, 0)
-      const end = new Date(date); end.setHours(23, 59, 59, 999)
+      const start = new Date(`${dateParam}T00:00:00+07:00`)
+      const end   = new Date(`${dateParam}T23:59:59.999+07:00`)
       where.paidAt = { gte: start, lte: end }
     }
 
@@ -28,6 +29,7 @@ export async function GET(request: NextRequest) {
     const transactions = await prisma.transaction.findMany({
       where: {
         ...where,
+        isVoid: false,
         order: Object.keys(orderWhere).length > 0 ? orderWhere : undefined,
       },
       include: {
@@ -42,7 +44,8 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true, data: transactions })
-  } catch {
+  } catch (error) {
+    console.error("❌ Gagal memuat transaksi:", error)  // ✅ Log error
     return NextResponse.json(
       { success: false, error: "Gagal memuat transaksi" },
       { status: 500 }
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Fetch order with items
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true, transaction: true },
+      include: { items: true, transactions: true },
     })
 
     if (!order) {
@@ -74,7 +77,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (order.status === "PAID" || order.transaction) {
+    if (order.status === "PAID" || order.transactions.length > 0) {
       return NextResponse.json(
         { success: false, error: "Pesanan sudah dibayar" },
         { status: 400 }

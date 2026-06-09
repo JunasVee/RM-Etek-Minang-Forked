@@ -1,11 +1,14 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getSession } from "@/lib/auth"
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getSession()
     const { items } = await request.json()
 
     const order = await prisma.order.findUnique({
@@ -25,6 +28,33 @@ export async function PUT(
         { success: false, error: "Pesanan sudah tidak bisa diubah" },
         { status: 400 }
       )
+    }
+
+    // Role check: non-OWNER can only ADD items or INCREASE quantities
+    if (session && session.role !== "OWNER") {
+      const oldItemMap = new Map(order.items.map((i) => [i.menuItemId, i.quantity]))
+      const newItemMap = new Map(items.map((i: any) => [i.menuItemId, i.quantity]))
+
+      // Check if any item was removed
+      for (const [menuItemId] of oldItemMap) {
+        if (!newItemMap.has(menuItemId)) {
+          return NextResponse.json(
+            { success: false, error: "Perlu persetujuan Owner untuk menghapus item" },
+            { status: 403 }
+          )
+        }
+      }
+
+      // Check if any quantity was reduced
+      for (const [menuItemId, oldQty] of oldItemMap) {
+        const newQty = newItemMap.get(menuItemId)
+        if (newQty !== undefined && newQty < oldQty) {
+          return NextResponse.json(
+            { success: false, error: "Perlu persetujuan Owner untuk mengurangi jumlah item" },
+            { status: 403 }
+          )
+        }
+      }
     }
 
     // Fetch all relevant menu items
@@ -101,7 +131,7 @@ export async function PUT(
       include: {
         items: { include: { menuItem: true } },
         createdBy: { select: { id: true, name: true } },
-        transaction: true,
+        transactions: true,
       },
     })
 

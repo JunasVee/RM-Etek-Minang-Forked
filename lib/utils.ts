@@ -11,7 +11,7 @@ export function formatRupiah(amount: number): string {
 }
 
 /**
- * Generate daily order number: ORD-YYYYMMDD-001
+ * Generate daily order number: ORD-YYYYMMDD-XXXXX (timestamp-based for uniqueness)
  */
 export function generateOrderNumber(sequence: number): string {
   const now = new Date()
@@ -19,7 +19,10 @@ export function generateOrderNumber(sequence: number): string {
     now.getFullYear().toString() +
     (now.getMonth() + 1).toString().padStart(2, "0") +
     now.getDate().toString().padStart(2, "0")
-  return `ORD-${dateStr}-${sequence.toString().padStart(3, "0")}`
+  // Use sequence + random suffix to avoid collisions
+  const suffix = sequence.toString().padStart(3, "0")
+  const rand = Math.floor(Math.random() * 90 + 10).toString()
+  return `ORD-${dateStr}-${suffix}${rand}`
 }
 
 /**

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { parseDateRange } from "@/lib/analytics"
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     // Get sold quantities
     const sold = await prisma.orderItem.findMany({
-      where: { order: { status: "PAID", transaction: { paidAt: { gte: start, lte: end } } } },
+      where: { order: { status: "PAID", transactions: { some: { paidAt: { gte: start, lte: end } } } } },
       select: { menuItemId: true, quantity: true },
     })
 
