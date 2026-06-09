@@ -1,0 +1,134 @@
+name: CI/CD - Test & Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_ENV: production
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.DIRECT_URL }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+jobs:
+  # ============================================================
+  # JOB 1: QUALITY & TESTING
+  # Semua pengecekan harus lolos sebelum proses build & deploy
+  # ============================================================
+  test:
+    name: Code Quality & Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ----------------------------------------------------------
+      # STEP 1: Validasi Skema Prisma
+      # Memastikan schema.prisma tidak ada kesalahan sintaksis
+      # atau relasi yang rusak sebelum build dilanjutkan.
+      # ----------------------------------------------------------
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      # ----------------------------------------------------------
+      # STEP 2: Linting (ESLint)
+      # Memeriksa standar kode dan aturan Next.js
+      # (misal: aturan Server vs Client Components).
+      # Pastikan script "lint" ada di package.json Anda.
+      # ----------------------------------------------------------
+      - name: Run ESLint
+        run: npm run lint
+
+      # ----------------------------------------------------------
+      # STEP 3: TypeScript Type Check
+      # Memastikan tidak ada type error di seluruh aplikasi.
+      # Gunakan flag --noEmit agar tidak menghasilkan file output.
+      # Pastikan script "typecheck" ada di package.json:
+      #   "typecheck": "tsc --noEmit"
+      # ----------------------------------------------------------
+      - name: TypeScript Type Check
+        run: npm run typecheck
+        # Jika belum ada script typecheck di package.json,
+        # ganti baris di atas dengan:
+        # run: npx tsc --noEmit
+
+      # ----------------------------------------------------------
+      # STEP 4: Unit & Integration Tests (Vitest / Jest)
+      # Menguji fungsi-fungsi kritis seperti:
+      # - Logika Custom JWT (jose): enkripsi, dekripsi, validasi token
+      # - Fungsi helper data untuk Recharts, SheetJS, jsPDF
+      # Pastikan script "test" ada di package.json:
+      #   Vitest: "test": "vitest run"
+      #   Jest:   "test": "jest --ci"
+      # ----------------------------------------------------------
+      - name: Run Unit & Integration Tests
+        run: npm test
+        env:
+          # Override NODE_ENV khusus untuk testing
+          NODE_ENV: test
+          # Gunakan dummy/test values agar unit test tidak
+          # bergantung pada koneksi database/service eksternal
+          JWT_SECRET: test-secret-key-for-ci-only
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  # ============================================================
+  # JOB 2: BUILD & DEPLOY
+  # Hanya berjalan jika JOB 1 (test) berhasil penuh
+  # ============================================================
+  build-and-deploy:
+    name: Build and Deploy Application
+    runs-on: ubuntu-latest
+    needs: test  # <-- Kunci utama: deploy DIBLOKIR jika test gagal
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Build Next.js application
+        run: npm run build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment-package
+          cp -r .next deployment-package/
+          cp -r public deployment-package/ 2>/dev/null || true
+          cp -r prisma deployment-package/ 2>/dev/null || true
+          cp -r node_modules deployment-package/
+          cp package*.json deployment-package/
+          cp next.config.js deployment-package/ 2>/dev/null || true
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.WEBAPP_NAME }}
+          slot-name: Production
+          package: deployment-package
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
