@@ -33,7 +33,7 @@ jobs:
 
       # ✅ TAMBAHAN: Run Jest tests
       - name: Run tests
-        run: npm test -- --ci --passWithNoTests
+        run: npm test
         env:
           NODE_ENV: test
 
