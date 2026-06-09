@@ -14,14 +14,14 @@ export async function GET(request: NextRequest) {
     const items = await prisma.orderItem.findMany({
       where: {
         menuItemId,
-        order: { status: "PAID", transactions: { some: { paidAt: { gte: start, lte: end } } } },
+        order: { status: "PAID", transaction: { some: { paidAt: { gte: start, lte: end } } } },
       },
-      include: { order: { select: { transactions: { select: { paidAt: true } } } } },
+      include: { order: { select: { transaction: { select: { paidAt: true } } } } },
     })
 
     const dailyMap = new Map<string, number>()
     for (const item of items) {
-      const date = item.order.transactions[0]?.paidAt.toISOString().split("T")[0]
+      const date = item.order.transaction[0]?.paidAt.toISOString().split("T")[0]
       if (date) dailyMap.set(date, (dailyMap.get(date) || 0) + item.quantity)
     }
 
