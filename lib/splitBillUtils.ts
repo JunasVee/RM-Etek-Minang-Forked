@@ -1,8 +1,3 @@
-/**
- * Utility functions untuk fitur Split Bill
- * Di-extract dari logic split-pay dan split-bill-dialog
- * agar bisa di-test secara terpisah (unit testable)
- */
 
 /**
  * Hitung kembalian dari pembayaran tunai
