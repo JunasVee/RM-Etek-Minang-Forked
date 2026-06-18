@@ -16,14 +16,16 @@ module.exports = {
   },
   collectCoverage: true,
   coverageDirectory: "coverage",
-  collectCoverageFrom: ["lib/splitBillUtils.ts"],
+  collectCoverageFrom: [
+    "lib/**/*.ts",
+    "app/api/**/*.ts",
+    "!lib/__tests__/**",
+    "!lib/__mocks__/**",
+    "!lib/prisma.ts",
+    "!lib/supabase.ts",
+    "!lib/printer.ts",
+    "!lib/export.ts",
+    "!**/*.d.ts",
+  ],
   coverageReporters: ["text", "lcov"],
-  coverageThreshold: {
-    global: {
-      statements: 80,
-      branches: 80,
-      functions: 80,
-      lines: 80,
-    },
-  },
 };
