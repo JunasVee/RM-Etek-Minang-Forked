@@ -10,7 +10,9 @@ export const prisma = {
   user: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   },
   order: {
     findMany: jest.fn(),
@@ -20,8 +22,10 @@ export const prisma = {
     update: jest.fn(),
   },
   orderItem: {
+    findMany: jest.fn(),
     deleteMany: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   },
   menuItem: {
     findMany: jest.fn(),
@@ -34,15 +38,23 @@ export const prisma = {
   transaction: {
     findMany: jest.fn(),
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     create: jest.fn(),
+    count: jest.fn(),
     aggregate: jest.fn(),
+    delete: jest.fn(),
   },
   expense: {
     findMany: jest.fn(),
+    findUnique: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
     aggregate: jest.fn(),
   },
   stockLog: {
+    findMany: jest.fn(),
+    create: jest.fn(),
     createMany: jest.fn(),
   },
   restockNotification: {
@@ -50,6 +62,7 @@ export const prisma = {
     findFirst: jest.fn(),
     createMany: jest.fn(),
     create: jest.fn(),
+    updateMany: jest.fn(),
   },
   $transaction: jest.fn(),
 }

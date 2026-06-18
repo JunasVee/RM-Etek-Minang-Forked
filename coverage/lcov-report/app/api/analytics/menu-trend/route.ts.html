@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/22</span>
+                <span class='fraction'>22/22</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -97,54 +97,54 @@
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
 <a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<a name='L35'></a><a href='#L35'>35</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export const <span class="cstat-no" title="statement not covered" >dynamic = "force-dynamic"</span>
-<span class="cstat-no" title="statement not covered" >import { NextRequest, NextResponse } from "next/server"</span>
-<span class="cstat-no" title="statement not covered" >import { prisma } from "@/lib/prisma"</span>
-<span class="cstat-no" title="statement not covered" >import { parseDateRange } from "@/lib/analytics"</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">export const dynamic = "force-dynamic"
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { parseDateRange } from "@/lib/analytics"
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export async function <span class="fstat-no" title="function not covered" >G</span>ET(</span>request: NextRequest) {
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    const sp = <span class="cstat-no" title="statement not covered" >request.nextUrl.searchParams</span>
-    const menuItemId = <span class="cstat-no" title="statement not covered" >sp.get("menuItemId")</span>
-<span class="cstat-no" title="statement not covered" >    if (!menuItemId) <span class="cstat-no" title="statement not covered" >return NextResponse.json({ success: false, error: "menuItemId required" }, { status: 400 })</span></span>
+export async function GET(request: NextRequest) {
+  try {
+    const sp = request.nextUrl.searchParams
+    const menuItemId = sp.get("menuItemId")
+    if (!menuItemId) return NextResponse.json({ success: false, error: "menuItemId required" }, { status: 400 })
 &nbsp;
-    const { start, end } = <span class="cstat-no" title="statement not covered" >parseDateRange(sp.get("startDate"), sp.get("endDate"))</span>
+    const { start, end } = parseDateRange(sp.get("startDate"), sp.get("endDate"))
 &nbsp;
-    const items = <span class="cstat-no" title="statement not covered" >await prisma.orderItem.findMany({</span>
+    const items = await prisma.orderItem.findMany({
       where: {
         menuItemId,
         order: { status: "PAID", transaction: { is: { paidAt: { gte: start, lte: end } } } },
@@ -152,18 +152,18 @@
       include: { order: { select: { transaction: { select: { paidAt: true } } } } },
     })
 &nbsp;
-    const dailyMap = <span class="cstat-no" title="statement not covered" >new Map&lt;string, number&gt;()</span>
-<span class="cstat-no" title="statement not covered" >    for (const item of items) {</span>
-      const date = <span class="cstat-no" title="statement not covered" >item.order?.transaction?.paidAt.toISOString().split("T")[0]</span>
-<span class="cstat-no" title="statement not covered" >      if (date) <span class="cstat-no" title="statement not covered" >dailyMap.set(date, (dailyMap.get(date) || 0) + item.quantity)</span></span>
+    const dailyMap = new Map&lt;string, number&gt;()
+    for (const item of items) {
+      const date = item.order<span class="branch-0 cbranch-no" title="branch not covered" >?.t</span>ransaction<span class="branch-0 cbranch-no" title="branch not covered" >?.p</span>aidAt.toISOString().split("T")[0]
+      <span class="missing-if-branch" title="else path not taken" >E</span>if (date) dailyMap.set(date, (dailyMap.get(date) || 0) + item.quantity)
     }
 &nbsp;
-    const trend = <span class="cstat-no" title="statement not covered" >Array.from(dailyMap.entries())</span>
-      .map(<span class="fstat-no" title="function not covered" >([</span>date, qty]) =&gt; (<span class="cstat-no" title="statement not covered" >{ date, qty })</span>)
-      .sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >a.date.localeCompare(b.date))</span>
+    const trend = Array.from(dailyMap.entries())
+      .map(([date, qty]) =&gt; ({ date, qty }))
+      .sort((a, b) =&gt; a.date.localeCompare(b.date))
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return NextResponse.json({ success: true, data: trend })</span>
-  } catch { <span class="cstat-no" title="statement not covered" >return NextResponse.json({ success: false, error: "Gagal memuat data" }, { status: 500 }) }</span>
+    return NextResponse.json({ success: true, data: trend })
+  } catch { return NextResponse.json({ success: false, error: "Gagal memuat data" }, { status: 500 }) }
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -172,7 +172,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-18T18:57:39.099Z
+                at 2026-06-18T22:17:06.402Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
